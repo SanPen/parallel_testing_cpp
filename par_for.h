@@ -8,7 +8,10 @@
 #include <future>
 #include <cmath>
 #include <mutex>
+#include <iostream>
 
+#include <windows.h>
+#include <winbase.h>
 
 
 template<typename T>
@@ -128,7 +131,7 @@ static void ParallelFor(Index start, Index end, Callable func, unsigned nb_threa
     // Size of a slice for the range functions
     Index n = end - start + 1;
     Index slice = (Index) std::round(n / static_cast<double> (nb_threads));
-    slice = std::max(slice, Index(1));
+    slice = slice > Index(1) ? slice: Index(1);  // std::max(slice, Index(1));
 
     // [Helper] Inner loop
     auto launchRange = [&func] (int k1, int k2) {
@@ -141,12 +144,19 @@ static void ParallelFor(Index start, Index end, Callable func, unsigned nb_threa
     std::vector<std::thread> pool;
     pool.reserve(nb_threads);
     Index i1 = start;
-    Index i2 = std::min(start + slice, end);
+    Index i2 = (start + slice) < end ? (slice + start) : end; //std::min(start + slice, end);
 
     for (unsigned i = 0; i + 1 < nb_threads && i1 < end; ++i) {
         pool.emplace_back(launchRange, i1, i2);
+
+        DWORD_PTR dw = SetThreadAffinityMask(pool.back().native_handle(), DWORD_PTR(1) << i);
+        if (dw == 0) {
+            DWORD dwErr = GetLastError();
+            std::cerr << "SetThreadAffinityMask failed, GLE = " << dwErr << '\n';
+        }
+
         i1 = i2;
-        i2 = std::min(i2 + slice, end);
+        i2 = (i2 + slice) < end ? (i2 + slice): end; //std::min(i2 + slice, end);
     }
 
     if (i1 < end) {
