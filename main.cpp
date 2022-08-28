@@ -1,6 +1,7 @@
 //
 // Created by santi on 26/08/2022.
 //
+//#include <ppl.h>
 #include "input_data.h"
 #include "output_data.h"
 #include "random.h"
@@ -25,15 +26,17 @@ void worker(const InputData& input_data,
 
     std::cout << "Thread " << thread_index << " [" << time_indices[0]<< ", " << time_indices[time_indices.size() - 1] << "]\n";
 
+    Matrix A(input_data.getDim(), input_data.getDim());
+    Matrix b(input_data.getDim(), 1);
+    Matrix x(input_data.getDim(), 1);
 
     for(const int& t: time_indices){
 
-        Matrix b = input_data.getAt(t);
+        b = input_data.getAt(t);
 
-        Matrix A(input_data.getDim(), input_data.getDim());
         fillA(A);
 
-        Matrix x = A * b;
+        x = A * b;
 
         output_data.setAt(t, x);
     }

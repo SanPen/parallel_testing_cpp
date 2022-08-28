@@ -22,7 +22,7 @@ add_definitions(-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
 # Compiler options for Visual Studio
 # this is only for Visual Studio since set(CMAKE_CXX_STANDARD 17) will not work apparently :/
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /permissive")  # W4 is to add more warnings when compiling
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /permissive /EHsc")  # W4 is to add more warnings when compiling
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)  # this is to be able to use localtime_s and similar without compiler complaints
 else()
     # set the debug level of optimization to the lowest
